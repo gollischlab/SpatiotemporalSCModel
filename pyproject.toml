@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sc_model"
+version = "1.0.0"
+dependencies = [
+  "numpy",
+  "scipy",
+  "matplotlib",
+  "pandas",
+  "tqdm",
+  "seaborn",
+  "numba",
+  "scikit-learn",
+]
+requires-python = ">=3.8"
+authors = [
+  {name = "Shashwat Sridhar", email = "shashwat.sridhar@med.uni-goettingen.de"},
+]
+maintainers = [
+  {name = "Shashwat Sridhar", email = "shashwat.sridhar@med.uni-goettingen.de"},
+  {name = "Tim Gollisch", email = "tim.gollisch@med.uni-goettingen.de"}
+]
+description = "Code accompanying the manuscript by Sridhar et al. 2025: Modeling spatial contrast sensitivity in responses of primate retinal ganglion cells to natural movies."
+readme = "README.md"
+keywords = ["neuroscience", "computational neuroscience", "retina", "model", "data analysis"]
+classifiers = [
+  "Programming Language :: Python :: 3"
+]
+
+[tool.setuptools]
+packages = ["sc_model", "sc_model.dataio", "sc_model.models", "sc_model.utils"]
