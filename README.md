@@ -4,7 +4,7 @@ Code repository to fit linear-nonlinear models, spatial contrast models and STC-
 
 **Sridhar S, Vystrčilová M, Khani MH, Karamanlis D, Schreyer HM, Ramakrishna V, Krüppel S, Zapp SJ, Mietsch M, Ecker AS, Gollisch T: Modeling spatial contrast sensitivity in responses of primate retinal ganglion cells to natural movies.**
 
-The code is designed to work with the data that was published along with the paper, which is available at [https://doi.org/10.12751/g-node.3dfiti](https://doi.org/10.12751/g-node.3dfiti). However, any dataset stored with the same structure can be loaded with this code.
+The code is designed to work with the data that was published along with the paper, which is available at [https://doi.org/10.12751/g-node.t43ph1](https://doi.org/10.12751/g-node.t43ph1). However, any dataset stored with the same structure can be loaded with this code.
 
 The codebase is written in Python and is intended to be used as an installed Python package. It is designed to work efficiently on an NVIDIA GPU, but it can also be run on a CPU. The subunit model requires PyTorch for GPU-accelerated training. The code is extensively documented. However, if you still have questions or problems, feel free to open an issue on GitHub, or contact us directly via email.
 
