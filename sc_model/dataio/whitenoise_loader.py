@@ -280,6 +280,34 @@ class WhitenoiseLoader(object):
 
         return output_array
 
+    def get_training_set(self):
+        """
+        Return the full training stimulus as a cropped array.
+
+        This method returns all training trials concatenated and cropped to the
+        specified receptive field center. The trials are loaded from the cache
+        if available, otherwise from disk.
+
+        :return:
+            The cropped training set as a numpy array with shape
+            (n_trials, n_frames, 2*spatial_filter_size, 2*spatial_filter_size).
+        """
+        if self._trial_cache is not None:
+            return np.array([self._trial_cache[t] for t in self.train_trials])
+        else:
+            output_array = np.zeros(
+                (
+                    len(self.train_trials),
+                    self.train_frames,
+                    2 * self.spatial_filter_size,
+                    2 * self.spatial_filter_size,
+                ),
+                dtype=np.float32,
+            )
+            for i, trial_id in enumerate(self.train_trials):
+                output_array[i] = self.crop_trial(self.all_trials[trial_id])
+            return output_array
+
     def get_test_set(self):
         """
         Returns the test set as a cropped array.

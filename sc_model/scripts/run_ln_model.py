@@ -29,11 +29,11 @@ parser.add_argument(
     help="Stimulus name. Either white_noise or naturalistic_movies"
 )
 parser.add_argument(
-    "--stimulus_seed", default=0, type=int,
+    "--stimulus_seed", default=1, type=int,
     help="Stimulus seed. Either 1 or 2 for naturalistic movie. Must be 0 for white noise."
 )
 parser.add_argument(
-    "--cell_id", default=0, type=int,
+    "--cell_id", default=2, type=int,
     help="""
     Cell ID. The ID of the cell to analyze. 
     For 20220412_SN_252MEA6010_le_s4: 0..369. For 20220426_SS_252MEA6010_le_n3: 0..109.

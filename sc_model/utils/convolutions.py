@@ -239,3 +239,42 @@ def _get(arr: cp.ndarray) -> np.ndarray:
         return arr.get()
     else:
         return arr
+
+
+def convolve_temporal_only(
+    stimulus: np.ndarray,
+    temporal_filter: np.ndarray,
+) -> np.ndarray:
+    """
+    Convolve stimulus with temporal filter only, preserving spatial dimensions.
+
+    This function applies temporal convolution along the time axis while preserving
+    the spatial structure of the input. This is used for STC computation where
+    spatial information must be preserved after temporal filtering.
+
+    Uses scipy.signal.convolve with the filter reshaped to (1, n_temporal, 1) to
+    perform vectorized convolution across all spatial positions simultaneously.
+
+    :param stimulus: Input stimulus array with shape (n_frames, height, width).
+    :type stimulus: np.ndarray
+    :param temporal_filter: Temporal filter with shape (n_temporal,).
+    :type temporal_filter: np.ndarray
+
+    :return: Temporally convolved stimulus with shape
+        (n_frames - n_temporal + 1, height, width).
+    :rtype: np.ndarray
+    """
+    from scipy.signal import convolve
+
+    # Reshape temporal filter to (1, n_temporal, 1) for convolution along time axis
+    filter_reshaped = temporal_filter.reshape((1, -1, 1))
+
+    # Transpose stimulus from (n_frames, height, width) to (height, n_frames, width)
+    # so that convolution happens along the middle (time) axis
+    stimulus_transposed = stimulus.transpose(1, 0, 2)
+
+    # Convolve and transpose back
+    convolved = convolve(stimulus_transposed, filter_reshaped, mode="valid")
+
+    # Transpose back to (n_frames, height, width)
+    return convolved.transpose(1, 0, 2)

@@ -131,7 +131,7 @@ def get_data(
                 total_trials=train_responses.shape[1],
                 train_trials=train_trials,
                 validation_trials=[],
-                downsample=1,  # default value, can be changed if need be
+                downsample=4,  # default value, can be changed if need be
             )
             output_dict["stimuli"] = stimuli_loader
 

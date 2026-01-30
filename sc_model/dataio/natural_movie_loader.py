@@ -478,6 +478,34 @@ class NaturalMovieLoader:
 
         return output_array
 
+    def get_training_set(self):
+        """
+        Get the full training set of trials.
+
+        Returns all training trials concatenated and cropped around the
+        receptive field center. The trials are loaded from the cache if
+        available, otherwise computed on-the-fly.
+
+        :return:
+            The frames for the training set as a numpy array with shape
+            (n_trials, n_frames, 2*spatial_filter_size, 2*spatial_filter_size).
+        """
+        if self._trial_cache is not None:
+            return np.array([_get(self._trial_cache[t]) for t in self.train_trials])
+        else:
+            output_array = np.ones(
+                (
+                    len(self.train_trials),
+                    self.train_frames,
+                    2 * self.spatial_filter_size,
+                    2 * self.spatial_filter_size,
+                ),
+                dtype=np.float32,
+            ) * 0.5
+            for i, trial_id in enumerate(self.train_trials):
+                output_array[i] = _get(self.get_trial(trial_id))
+            return output_array
+
     def get_test_set(self):
         """
         Get the test set of trials.

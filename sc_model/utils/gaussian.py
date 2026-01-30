@@ -1,8 +1,45 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
 from numba import njit
 from scipy.optimize import curve_fit
+
+
+def compute_enclosing_square_half_sidelength(
+    fit_params: Tuple[float, float, float, float, float, float],
+    n_sigma: float = 3.0,
+) -> float:
+    """
+    Compute the half-sidelength of a square that encloses the n-sigma contour of a 2D Gaussian.
+
+    The n-sigma contour of a rotated 2D Gaussian is an ellipse. This function computes
+    the half-sidelength of the smallest axis-aligned square that fully encloses this
+    ellipse. This is useful for determining the spatial crop size for receptive field
+    analysis.
+
+    :param fit_params: Parameters of the fitted 2D Gaussian in the order
+        (amplitude, xo, yo, sigma_x, sigma_y, theta) where theta is the rotation angle.
+    :type fit_params: tuple[float, float, float, float, float, float]
+    :param n_sigma: Number of standard deviations for the contour. Default is 3.0.
+    :type n_sigma: float
+
+    :return: Half-sidelength of the enclosing square in pixels.
+    :rtype: float
+    """
+    amplitude, xo, yo, sigma_x, sigma_y, theta = fit_params
+
+    # Compute the extent of the rotated ellipse in x and y directions
+    delta_x = n_sigma * np.sqrt(
+        (sigma_x * np.cos(theta)) ** 2 + (sigma_y * np.sin(theta)) ** 2
+    )
+    delta_y = n_sigma * np.sqrt(
+        (sigma_x * np.sin(theta)) ** 2 + (sigma_y * np.cos(theta)) ** 2
+    )
+
+    # The half-sidelength is the maximum of the two extents
+    half_sidelength = np.maximum(delta_x, delta_y)
+
+    return float(half_sidelength)
 
 
 @njit(parallel=True)

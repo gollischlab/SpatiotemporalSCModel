@@ -1,4 +1,4 @@
-from typing import Union, Optional, Iterable
+from typing import Union, Optional, Iterable, Callable
 
 import numpy as np
 from scipy.stats import pearsonr
@@ -18,12 +18,12 @@ def ln_model_single_cell(
     cell_sta: np.ndarray,
     temporal_crop: int,
     spatial_crop: int,
-    fit_func: callable,
-    fit_func_der: Optional[callable],
-    starter_params,
+    fit_func: Callable,
+    fit_func_der: Optional[Callable],
+    starter_params: Union[np.ndarray, list],
     fit_bounds: Optional[Iterable] = None,
     mle_method: str = "L-BFGS-B",
-    sigma_window: float = 3.0,
+    sigma_window: Optional[float] = 3.0,
     check_gradient: bool = False,
     stimulus_smoothing: Optional[float] = None,
     sta_method: str = "sigpix",
