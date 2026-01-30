@@ -1,12 +1,12 @@
 # SpatiotemporalSCModel
 
-Code repository to fit linear-nonlinear and spatial contrast models to responses of retinal ganglion cells under spatiotemporal stimulation. It accompanies the paper:
+Code repository to fit linear-nonlinear models, spatial contrast models and STC-bases subunit models to responses of retinal ganglion cells under spatiotemporal stimulation. It accompanies the paper:
 
 **Sridhar S, Vystrčilová M, Khani MH, Karamanlis D, Schreyer HM, Ramakrishna V, Krüppel S, Zapp SJ, Mietsch M, Ecker AS, Gollisch T: Modeling spatial contrast sensitivity in responses of primate retinal ganglion cells to natural movies.**
 
 The code is designed to work with the data that was published along with the paper, which is available at [https://doi.org/10.12751/g-node.3dfiti](https://doi.org/10.12751/g-node.3dfiti). However, any dataset stored with the same structure can be loaded with this code.
 
-The codebase is written in Python and is intended to be used as an installed Python package. It is designed to work efficiently on an NVIDIA GPU, but it can also be run on a CPU. The code is extensively documented. However, if you still have questions or problems, feel free to open an issue on GitHub, or contact us directly via email.
+The codebase is written in Python and is intended to be used as an installed Python package. It is designed to work efficiently on an NVIDIA GPU, but it can also be run on a CPU. The subunit model requires PyTorch for GPU-accelerated training. The code is extensively documented. However, if you still have questions or problems, feel free to open an issue on GitHub, or contact us directly via email.
 
 # Installation
 
@@ -41,7 +41,7 @@ This will install the package named `sc_model` in editable mode, allowing you to
 
 # Usage
 
-The installed package `sc_model` provides code to load data from the accompanying data repository and fit two models to it -- the linear-nonlinear (LN) model and the spatial contrast (SC) model. The model fitting scripts are designed to be run from the command line, but the relevant functions can also be imported and run in a Python shell (not shown below).
+The installed package `sc_model` provides code to load data from the accompanying data repository and fit three models to it -- the linear-nonlinear (LN) model, the spatial contrast (SC) model and a subunit model. The model fitting scripts are designed to be run from the command line, but the relevant functions can also be imported and run in a Python shell (not shown below).
 
 **Note:** for all following examples, we assume that the data repository is cloned into the same parent directory as this code repository i.e. the data loading functions look for the data repository in the parent directory. If you have cloned the data repository elsewhere, you must change the `DATA_REPO` path accordingly in the file `sc_model/utils/project_variables.py`.
 
@@ -77,19 +77,49 @@ python run_sc_model.py \
 --sigpix_threshold 6.0
 ```
 
-This command will fit the SC model to the responses of cell `100` from the dataset `20220412_SN_252MEA6010_le_s4` to spatiotemporal white-noise. The model will be fitted using a spatial crop size of `20` pixels, a temporal crop size of `30` frames, a stimulus smoothing of `2.0` pixels, and a significance threshold of `6.0` for the spatial RF estimation. 
+This command will fit the SC model to the responses of cell `100` from the dataset `20220412_SN_252MEA6010_le_s4` to spatiotemporal white-noise. The model will be fitted using a spatial crop size of `20` pixels, a temporal crop size of `30` frames, a stimulus smoothing of `2.0` pixels, and a significance threshold of `6.0` for the spatial RF estimation.
 
-Both scripts load the specified data (training and test stimuli, the cell's STA and responses, etc.), train the respective model on the training set and evaluate on the test set. A full description of what each parameter does can be found in the help message of each script. To see the help message, run the following command:
+### Subunit model
+
+Fitting the subunit model is a two-step process. First, compute the spike-triggered covariance (STC) eigenvectors using white noise responses:
+
+```bash
+python run_compute_stc.py \
+--dataset 20220412_SN_252MEA6010_le_s4 \
+--cell_id 100 \
+--temporal_crop_size 30 \
+--n_stc_filters 16 \
+--max_spat_crop 8 \
+--device cuda
+```
+
+This computes the top `16` STC eigenvectors for cell `100`. The spatial crop size is automatically determined by fitting a 2D Gaussian to the cell's spatial receptive field and computing the 3-sigma contour (capped at `max_spat_crop`). STC results are always computed from white noise responses.
+
+Then, train the subunit model using the precomputed STC eigenvectors:
+
+```bash
+python run_subunit_pipeline.py \
+--dataset 20220412_SN_252MEA6010_le_s4 \
+--stimulus white_noise \
+--stimulus_seed 0 \
+--cell_id 100 \
+--n_subunits 16 \
+--n_stc_filters 16 \
+--temporal_crop_size 30 \
+--or_reg_lambda 1e-4 \
+--sub_l1_lambda 1e-4
+```
+
+This trains a subunit model with `16` subunits initialized from the STC eigenvectors. The pipeline first trains a Logical OR model with Group Lasso regularization to discover functional subunits, then trains the final subunit model with ReLU subunit nonlinearity and softplus output.
+
+All scripts load the specified data (training and test stimuli, the cell's STA and responses, etc.), train the respective model on the training set and evaluate on the test set. A full description of what each parameter does can be found in the help message of each script. To see the help message, run:
 
 ```bash
 python run_ln_model.py --help
-```
-or 
-
-```bash
 python run_sc_model.py --help
-```
-The help message will show you all the available parameters and their default values. 
+python run_compute_stc.py --help
+python run_subunit_pipeline.py --help
+``` 
 
 **Note on GPU usage:** if you have CUDA and cupy correctly set up, the models will fit the data using GPU routines. Since the data used for training can be quite large for most GPUs, the stimulus frames in each trial are broken up into smaller chunks. In case you still run into memory issues, you can reduce the size of these chunks by reducing the `MAX_FLOAT_SIZE` parameter in the file `sc_model/utils/project_variables.py`. 
 
